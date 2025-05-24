@@ -1,7 +1,6 @@
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
+const { nanoid } = require("nanoid");
+const UrlModel = require("../models/urlModel");
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -38,7 +37,7 @@ const uploadFile = async (req, res) => {
             return res.status(500).json({ error: "Error uploading file" });
         }
 
-        const { data, error: getPublicUrlError } = supabase.storage
+        const { data: publicUrlData, error: getPublicUrlError } = supabase.storage
             .from(BUCKET)
             .getPublicUrl(filePath);
 
@@ -47,16 +46,53 @@ const uploadFile = async (req, res) => {
             return res.status(500).json({ error: "Error getting public URL" });
         }
 
+        const url = publicUrlData.publicUrl;
+        const response = await createUrl(url);
+        if (response.error) {
+            return res.status(500).json({ error: response.error });
+        }
+
         return res.status(200).json({
-            message: "File uploaded successfully",
-            data: data.publicUrl,
+            message: "File uploaded and short URL created",
+            data: response.data,
         });
 
     } catch (error) {
         console.error("Error uploading file:", error);
         return res.status(500).json({ error: "Error uploading file" });
     }
+};
+
+const createUrl = async (url) => {
+    try {
+        if (!url) {
+            return { error: "URL is required" };
+        }
+
+        const slug = nanoid(7);
+        const newUrl = await UrlModel.create({ url, shortCode: slug });
+        return { data: newUrl };
+    } catch (error) {
+        console.error("Error creating URL:", error);
+        return { error: "Error creating URL" };
+    }
+};
+
+const getUrl = async (req, res) => {
+    try {
+        const { slug } = req.params;
+        if (!slug) {
+            return res.status(400).json({ error: "Slug is required" });
+        }
+        const urlEntry = await UrlModel.findOne({ where: { shortCode: slug } });
+        if (!urlEntry) {
+            return res.status(404).json({ error: "URL not found" });
+        }
+        return res.redirect(urlEntry.url);
+    } catch (error) {
+        console.error("Error retrieving URL:", error);
+        return res.status(500).json({ error: "Error retrieving URL" });
+    }
 }
 
-
-module.exports = { uploadFile };
+module.exports = { uploadFile, getUrl };
