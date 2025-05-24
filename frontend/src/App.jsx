@@ -49,13 +49,13 @@ const App = () => {
       setStatus('Uploading...');
       const formData = new FormData();
       formData.append('image', file);
-      const response = await axios.post('http://localhost:5000/api/pix/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       setStatus('Upload successful!');
-      setUploadedUrl(response.data.data);
+      setUploadedUrl(`http://localhost:5000/url/${response.data.data.shortCode}`);
     } catch (error) {
       console.error('Error uploading file:', error);
       setStatus('Upload failed. Please try again.');
@@ -206,13 +206,6 @@ const App = () => {
               </div>
             </div>
           )}
-        </div>
-
-        <div className='max-w-3xl mx-auto mt-12'>
-          <h2 className='text-2xl font-bold mb-6 text-gray-800'>Upload History</h2>
-          <div className='bg-white rounded-lg shadow-md p-6'>
-            <div className='text-center text-gray-500'>Your upload history will appear here</div>
-          </div>
         </div>
       </main>
 
