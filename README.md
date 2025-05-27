@@ -11,7 +11,7 @@ PixCDN is a free and simple image hosting SaaS that allows users to upload image
 
 ## How to Use
 
-1. Visit the website \[https://pix.sarveswaran.tech].
+1. Visit the website \https://pix.sarveswaran.tech.
 2. Drag and drop your images onto the upload area.
 3. Copy the generated public URL for your image.
 4. Use the URL to embed or share your image anywhere on the web.
